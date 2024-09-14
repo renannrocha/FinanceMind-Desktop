@@ -4,11 +4,8 @@ from database import execute_query, search_query
 
 class GerenciarCategorias:
     def __init__(self, parent):
-        self.master = parent
-        if isinstance(self.master, tk.Frame):
-            self.master = self.master.master  # Obtém a janela principal a partir do Frame
-        self.master.title("Gerenciamento de Categorias")
-        self.janela = tk.Frame(self.master)
+        self.parent = parent
+        self.janela = tk.Frame(parent)
         self.janela.pack(fill=tk.BOTH, expand=True)
         self.criar_widgets()
 
@@ -74,3 +71,7 @@ class GerenciarCategorias:
     def ask_user_input(self, title, prompt):
         user_input = simpledialog.askstring(title, prompt, parent=self.master)
         return user_input
+
+    def destruir(self):
+        """ Método que destrói o frame quando a aba é trocada """
+        self.janela.destroy()

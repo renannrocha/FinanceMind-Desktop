@@ -39,7 +39,6 @@ class AdicionarTransacao:
         salvar_btn = tk.Button(self.master, text="Salvar", command=self.salvar)
         salvar_btn.pack(pady=10)
 
-        # Garantir que o trace_add funcione corretamente
         self.tipo_var.trace_add("write", self.atualizar_categorias)
 
     def carregar_categorias(self):
@@ -70,16 +69,14 @@ class AdicionarTransacao:
             messagebox.showerror("Erro", "Valor ou data inválidos.")
             return
 
-        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))        
+        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))
         if categorias:
             categoria_id = categorias[0][0]
         else:
             messagebox.showerror("Erro", "Categoria não encontrada.")
             return
 
-        execute_query('''
-            INSERT INTO transacoes (tipo, valor, data, categoria_id, descricao)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (tipo, valor, data, categoria_id, descricao))
+        execute_query('''INSERT INTO transacoes (tipo, valor, data, categoria_id, descricao) VALUES (?, ?, ?, ?, ?)''',
+                      (tipo, valor, data, categoria_id, descricao))
 
         messagebox.showinfo("Sucesso", "Transação adicionada com sucesso.")
