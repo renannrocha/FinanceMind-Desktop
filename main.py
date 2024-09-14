@@ -1,21 +1,12 @@
 import tkinter as tk
-from gui.dashboard import Dashboard
-from database import init_db
+from gui.login import Login  # Certifique-se de que o caminho está correto
 
 def main():
-    # Inicializa o banco de dados
-    init_db()
-
-    # Cria a janela principal
     root = tk.Tk()
-    root.title("FinanceMind - Controle Financeiro Pessoal")
-    root.geometry("800x600")
-
-    # Inicializa o dashboard
-    app = Dashboard(root)
-    
-    # Inicia o loop da GUI
+    root.geometry("300x250")
+    root.title("Login")
+    Login(root)
     root.mainloop()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

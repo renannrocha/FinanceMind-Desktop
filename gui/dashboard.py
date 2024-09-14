@@ -1,36 +1,59 @@
 import tkinter as tk
 from tkinter import ttk
-from gui.transacoes import Transacoes
-from gui.categorias import Categorias
+from gui.transacoes import AdicionarTransacao
+from gui.categorias import GerenciarCategorias
 from gui.relatorios import Relatorios
 from gui.orcamentos import Orcamentos
+from utils.graficos import gerar_grafico_transacoes
 
 class Dashboard:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Dashboard")
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Dashboard")
+        self.criar_widgets()
 
-        # Cria os botões para acessar outras telas
-        self.create_widgets()
+    def criar_widgets(self):
+        menu = tk.Frame(self.root)
+        menu.pack(side=tk.LEFT, fill=tk.Y)
 
-    def create_widgets(self):
-        ttk.Button(self.master, text="Transações", command=self.abrir_transacoes).pack(pady=10)
-        ttk.Button(self.master, text="Categorias", command=self.abrir_categorias).pack(pady=10)
-        ttk.Button(self.master, text="Relatórios", command=self.abrir_relatorios).pack(pady=10)
-        ttk.Button(self.master, text="Orçamentos", command=self.abrir_orcamentos).pack(pady=10)
+        tk.Button(menu, text="Dashboard", command=self.mostrar_dashboard).pack(pady=5)
+        tk.Button(menu, text="Adicionar Transação", command=self.adicionar_transacao).pack(pady=5)
+        tk.Button(menu, text="Gerenciar Categorias", command=self.gerenciar_categorias).pack(pady=5)
+        tk.Button(menu, text="Relatórios", command=self.gerar_relatorios).pack(pady=5)
+        tk.Button(menu, text="Orçamentos", command=self.gerenciar_orcamentos).pack(pady=5)
 
-    def abrir_transacoes(self):
-        transacoes_window = tk.Toplevel(self.master)
-        Transacoes(transacoes_window)
+        self.conteudo = tk.Frame(self.root)
+        self.conteudo.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-    def abrir_categorias(self):
-        categorias_window = tk.Toplevel(self.master)
-        Categorias(categorias_window)
+        self.mostrar_dashboard()
 
-    def abrir_relatorios(self):
-        relatorios_window = tk.Toplevel(self.master)
-        Relatorios(relatorios_window)
+    def mostrar_dashboard(self):
+        for widget in self.conteudo.winfo_children():
+            widget.destroy()
 
-    def abrir_orcamentos(self):
-        orcamentos_window = tk.Toplevel(self.master)
-        Orcamentos(orcamentos_window)
+        tk.Label(self.conteudo, text="Visão Geral das Finanças", font=("Arial", 16)).pack(pady=10)
+
+        frame_graficos = tk.Frame(self.conteudo)
+        frame_graficos.pack(pady=10, fill=tk.BOTH, expand=True)
+
+        gerar_grafico_transacoes(frame_graficos)
+
+    def adicionar_transacao(self):
+        for widget in self.conteudo.winfo_children():
+            widget.destroy()
+        AdicionarTransacao(self.conteudo)
+
+    def gerenciar_categorias(self):
+        for widget in self.conteudo.winfo_children():
+            widget.destroy()
+        GerenciarCategorias(self.conteudo)
+
+    def gerar_relatorios(self):
+        for widget in self.conteudo.winfo_children():
+            widget.destroy()
+        Relatorios(self.conteudo)
+
+    def gerenciar_orcamentos(self):
+        for widget in self.conteudo.winfo_children():
+            widget.destroy()
+        Orcamentos(self.conteudo)
