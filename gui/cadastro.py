@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from database import execute_query  # Certifique-se de que o caminho está correto
+from database import execute_query
 
 def mostrar_login():
     root = tk.Tk()
@@ -11,6 +11,7 @@ def mostrar_login():
 class Cadastro:
     def __init__(self, root):
         self.root = root
+        self.root.geometry("800x800")
         self.root.title("Cadastro")
         self.criar_widgets()
 
@@ -49,8 +50,8 @@ class Cadastro:
         try:
             execute_query("INSERT INTO usuarios (usuario, senha) VALUES (?, ?)", (usuario, senha))
             messagebox.showinfo("Sucesso", "Cadastro realizado com sucesso!")
-            self.root.destroy()  # Fecha a tela de cadastro e volta para a tela de login
-            mostrar_login()  # Abre a tela de login
+            self.root.destroy()
+            mostrar_login()
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao cadastrar usuário: {e}")
 

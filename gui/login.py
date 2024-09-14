@@ -32,9 +32,7 @@ class Login:
     def login(self):
         usuario = self.usuario_entry.get()
         senha = self.senha_entry.get()
-        # Implementar lógica de autenticação
         if usuario and senha:
-            # Exemplo de navegação para o Dashboard
             self.root.withdraw()
             dashboard = tk.Toplevel(self.root)
             Dashboard(dashboard)
@@ -42,5 +40,5 @@ class Login:
             messagebox.showerror("Erro", "Por favor, preencha todos os campos.")
 
     def cadastrar(self):
-        self.root.withdraw()  # Oculta a tela de login
-        mostrar_cadastro()  # Abre a tela de cadastro
+        self.root.withdraw()
+        mostrar_cadastro()

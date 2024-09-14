@@ -12,7 +12,6 @@ class Orcamentos:
     def criar_widgets(self):
         tk.Label(self.janela, text="Orçamentos", font=("Arial", 16)).pack(pady=10)
 
-        # Adicionar widgets para gerenciamento de orçamentos
         tk.Label(self.janela, text="Categoria:").pack(pady=5)
         self.categoria_var = tk.StringVar()
         categorias = search_query("SELECT nome FROM categorias")

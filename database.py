@@ -37,7 +37,6 @@ def init_db():
         )
     ''')
 
-    # Tabela de Categorias
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS categorias (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +45,6 @@ def init_db():
         )
     ''')
 
-    # Tabela de Transações
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS transacoes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,7 +57,6 @@ def init_db():
         )
     ''')
 
-    # Tabela de Orçamentos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS orcamentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

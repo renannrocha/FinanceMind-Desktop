@@ -1,9 +1,9 @@
 import tkinter as tk
-from gui.login import Login  # Certifique-se de que o caminho está correto
+from gui.login import Login
 
 def main():
     root = tk.Tk()
-    root.geometry("300x250")
+    root.geometry("500x300")
     root.title("Login")
     Login(root)
     root.mainloop()

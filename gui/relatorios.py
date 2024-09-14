@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from utils.graficos import gerar_grafico_transacoes  # Atualize com gráficos de relatórios
+from utils.graficos import gerar_grafico_transacoes
 
 class Relatorios:
     def __init__(self, parent):
@@ -11,7 +11,6 @@ class Relatorios:
 
     def criar_widgets(self):
         tk.Label(self.janela, text="Relatórios", font=("Arial", 16)).pack(pady=10)
-        # Adicione widgets para geração de relatórios
         tk.Label(self.janela, text="Selecione o Período:").pack(pady=5)
         self.inicio_entry = tk.Entry(self.janela, placeholder="Data Início (YYYY-MM-DD)")
         self.inicio_entry.pack(pady=5)
@@ -24,6 +23,5 @@ class Relatorios:
     def gerar_relatorio(self):
         inicio = self.inicio_entry.get()
         fim = self.fim_entry.get()
-        # Implementar lógica para gerar relatório com base nas datas fornecidas
         tk.Label(self.janela, text=f"Relatório de {inicio} a {fim}").pack(pady=10)
         gerar_grafico_transacoes(self.janela)

@@ -1,11 +1,14 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 from database import execute_query, search_query
 
 class GerenciarCategorias:
     def __init__(self, parent):
-        self.parent = parent
-        self.janela = tk.Frame(parent)
+        self.master = parent
+        if isinstance(self.master, tk.Frame):
+            self.master = self.master.master  # Obtém a janela principal a partir do Frame
+        self.master.title("Gerenciamento de Categorias")
+        self.janela = tk.Frame(self.master)
         self.janela.pack(fill=tk.BOTH, expand=True)
         self.criar_widgets()
 
@@ -69,13 +72,5 @@ class GerenciarCategorias:
             messagebox.showwarning("Aviso", "Selecione uma categoria para excluir.")
 
     def ask_user_input(self, title, prompt):
-        input_dialog = tk.Toplevel(self.parent)
-        input_dialog.title(title)
-        tk.Label(input_dialog, text=prompt).pack(pady=5)
-        user_input = tk.Entry(input_dialog)
-        user_input.pack(pady=5)
-        submit_btn = tk.Button(input_dialog, text="OK", command=lambda: input_dialog.destroy())
-        submit_btn.pack(pady=5)
-
-        input_dialog.wait_window()
-        return user_input.get()
+        user_input = simpledialog.askstring(title, prompt, parent=self.master)
+        return user_input

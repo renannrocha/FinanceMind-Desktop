@@ -5,42 +5,52 @@ from datetime import datetime
 
 class AdicionarTransacao:
     def __init__(self, parent):
-        self.parent = parent
-        self.janela = tk.Frame(parent)
-        self.janela.pack(fill=tk.BOTH, expand=True)
+        self.master = parent
         self.criar_widgets()
 
     def criar_widgets(self):
-        tk.Label(self.janela, text="Adicionar Transação", font=("Arial", 16)).pack(pady=10)
+        tk.Label(self.master, text="Adicionar Transação", font=("Arial", 16)).pack(pady=10)
 
-        tk.Label(self.janela, text="Tipo:").pack(pady=5)
-        self.tipo_var = tk.StringVar()
-        tipo_combo = ttk.Combobox(self.janela, textvariable=self.tipo_var, values=['Receita', 'Despesa'], state='readonly')
-        tipo_combo.pack(pady=5)
-        tipo_combo.current(0)
+        self.tipo_var = tk.StringVar(value="Receita")
+        tk.Label(self.master, text="Tipo (Receita/Despesa):").pack(pady=5)
+        tipo_frame = tk.Frame(self.master)
+        tipo_frame.pack(pady=5)
+        tk.Radiobutton(tipo_frame, text="Receita", variable=self.tipo_var, value="Receita").pack(side=tk.LEFT, padx=5)
+        tk.Radiobutton(tipo_frame, text="Despesa", variable=self.tipo_var, value="Despesa").pack(side=tk.LEFT, padx=5)
 
-        tk.Label(self.janela, text="Valor:").pack(pady=5)
-        self.valor_entry = tk.Entry(self.janela)
+        tk.Label(self.master, text="Valor:").pack(pady=5)
+        self.valor_entry = tk.Entry(self.master)
         self.valor_entry.pack(pady=5)
 
-        tk.Label(self.janela, text="Data (YYYY-MM-DD):").pack(pady=5)
-        self.data_entry = tk.Entry(self.janela)
+        tk.Label(self.master, text="Data (YYYY-MM-DD):").pack(pady=5)
+        self.data_entry = tk.Entry(self.master)
         self.data_entry.pack(pady=5)
 
-        tk.Label(self.janela, text="Categoria:").pack(pady=5)
+        tk.Label(self.master, text="Categoria:").pack(pady=5)
         self.categoria_var = tk.StringVar()
-        categorias = search_query("SELECT nome FROM categorias WHERE tipo = ?", (self.tipo_var.get(),))
-        categoria_combo = ttk.Combobox(self.janela, textvariable=self.categoria_var, values=[c[0] for c in categorias], state='readonly')
-        categoria_combo.pack(pady=5)
-        if categorias:
-            categoria_combo.current(0)
+        self.categoria_combo = ttk.Combobox(self.master, textvariable=self.categoria_var, state='readonly')
+        self.categoria_combo.pack(pady=5)
+        self.carregar_categorias()
 
-        tk.Label(self.janela, text="Descrição:").pack(pady=5)
-        self.descricao_entry = tk.Entry(self.janela)
+        tk.Label(self.master, text="Descrição:").pack(pady=5)
+        self.descricao_entry = tk.Entry(self.master)
         self.descricao_entry.pack(pady=5)
 
-        salvar_btn = tk.Button(self.janela, text="Salvar", command=self.salvar)
+        salvar_btn = tk.Button(self.master, text="Salvar", command=self.salvar)
         salvar_btn.pack(pady=10)
+
+        # Garantir que o trace_add funcione corretamente
+        self.tipo_var.trace_add("write", self.atualizar_categorias)
+
+    def carregar_categorias(self):
+        tipo = self.tipo_var.get()
+        categorias = search_query("SELECT nome FROM categorias WHERE tipo = ?", (tipo,))
+        self.categoria_combo['values'] = [c[0] for c in categorias]
+        if categorias:
+            self.categoria_combo.current(0)
+
+    def atualizar_categorias(self, *args):
+        self.carregar_categorias()
 
     def salvar(self):
         tipo = self.tipo_var.get()
@@ -60,7 +70,7 @@ class AdicionarTransacao:
             messagebox.showerror("Erro", "Valor ou data inválidos.")
             return
 
-        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))
+        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))        
         if categorias:
             categoria_id = categorias[0][0]
         else:
