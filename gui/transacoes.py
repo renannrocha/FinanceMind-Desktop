@@ -17,7 +17,7 @@ class AdicionarTransacao:
         # Adiciona a tabela de transações
         self.criar_tabela(main_frame)
 
-        # Adiciona o formulário de adição de transações abaixo da tabela
+        # Adiciona o formulário de adição de transações
         form_frame = tk.Frame(main_frame)
         form_frame.pack(pady=10, padx=10, fill=tk.X)
 
@@ -35,28 +35,31 @@ class AdicionarTransacao:
         # Valor
         tk.Label(form_frame, text="Valor:").grid(row=2, column=0, padx=5, pady=5, sticky="e")
         self.valor_entry = tk.Entry(form_frame)
-        self.valor_entry.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+        self.valor_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
         # Data
         tk.Label(form_frame, text="Data:").grid(row=3, column=0, padx=5, pady=5, sticky="e")
-        self.data_entry = tk.Entry(form_frame)
-        self.data_entry.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+        self.data_entry = DateEntry(form_frame, width=15, background='darkblue', foreground='white', borderwidth=2)
+        self.data_entry.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
 
         # Categoria
         tk.Label(form_frame, text="Categoria:").grid(row=4, column=0, padx=5, pady=5, sticky="e")
         self.categoria_var = tk.StringVar()
         self.categoria_combo = ttk.Combobox(form_frame, textvariable=self.categoria_var, state='readonly')
-        self.categoria_combo.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+        self.categoria_combo.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
         self.carregar_categorias()
 
         # Descrição
         tk.Label(form_frame, text="Descrição:").grid(row=5, column=0, padx=5, pady=5, sticky="e")
         self.descricao_entry = tk.Entry(form_frame)
-        self.descricao_entry.grid(row=5, column=1, padx=5, pady=5, sticky="w")
+        self.descricao_entry.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
 
         # Botão salvar
         salvar_btn = tk.Button(form_frame, text="Salvar", command=self.salvar)
         salvar_btn.grid(row=6, column=1, padx=5, pady=10, sticky="e")
+
+        # Configurar as colunas para expandir
+        form_frame.columnconfigure(1, weight=1)
 
         # Atualiza categorias
         self.tipo_var.trace_add("write", self.atualizar_categorias)
@@ -104,7 +107,7 @@ class AdicionarTransacao:
     def salvar(self):
         tipo = self.tipo_var.get()
         valor = self.valor_entry.get()
-        data = self.data_entry.get()
+        data = self.data_entry.get_date()  # Usar a data selecionada
         categoria = self.categoria_var.get()
         descricao = self.descricao_entry.get()
 
@@ -114,9 +117,8 @@ class AdicionarTransacao:
 
         try:
             valor = float(valor)
-            datetime.strptime(data, '%Y-%m-%d')
         except ValueError:
-            messagebox.showerror("Erro", "Valor ou data inválidos.")
+            messagebox.showerror("Erro", "Valor inválido.")
             return
 
         categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))
