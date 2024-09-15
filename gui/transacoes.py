@@ -3,6 +3,8 @@ from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
 from database import execute_query, search_query
 from datetime import datetime
+import csv
+from tkinter.filedialog import asksaveasfilename
 
 class AdicionarTransacao:
     def __init__(self, parent):
@@ -57,6 +59,23 @@ class AdicionarTransacao:
         # Botão salvar
         salvar_btn = tk.Button(form_frame, text="Salvar", command=self.salvar)
         salvar_btn.grid(row=6, column=1, padx=5, pady=10, sticky="e")
+
+        # Botão limpar
+        limpar_btn = tk.Button(form_frame, text="Limpar", command=self.limpar_campos)
+        limpar_btn.grid(row=6, column=0, padx=5, pady=10, sticky="w")
+
+        # Filtro de exportação
+        tk.Label(form_frame, text="Filtrar exportação:").grid(row=7, column=0, padx=5, pady=5, sticky="e")
+        self.filtro_var = tk.StringVar(value="Todos")
+        filtro_frame = tk.Frame(form_frame)
+        filtro_frame.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+        tk.Radiobutton(filtro_frame, text="Todos", variable=self.filtro_var, value="Todos").pack(side=tk.LEFT)
+        tk.Radiobutton(filtro_frame, text="Receita", variable=self.filtro_var, value="Receita").pack(side=tk.LEFT)
+        tk.Radiobutton(filtro_frame, text="Despesa", variable=self.filtro_var, value="Despesa").pack(side=tk.LEFT)
+
+        # Botão exportar para CSV
+        exportar_btn = tk.Button(form_frame, text="Exportar para CSV", command=self.exportar_para_csv)
+        exportar_btn.grid(row=7, column=2, padx=5, pady=10, sticky="e")
 
         # Configurar as colunas para expandir
         form_frame.columnconfigure(1, weight=1)
@@ -121,7 +140,7 @@ class AdicionarTransacao:
             messagebox.showerror("Erro", "Valor inválido.")
             return
 
-        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))
+        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,)) 
         if categorias:
             categoria_id = categorias[0][0]
         else:
@@ -159,3 +178,67 @@ class AdicionarTransacao:
         
         for transacao in transacoes:
             self.table.insert("", tk.END, values=transacao)
+
+    def limpar_campos(self):
+        """Limpa todos os campos do formulário."""
+        self.tipo_var.set("Receita")
+        self.valor_entry.delete(0, tk.END)
+        self.data_entry.set_date(datetime.now())
+        self.categoria_var.set("")
+        self.descricao_entry.delete(0, tk.END)
+
+    def exportar_para_csv(self):
+        """Exporta os dados da tabela para um arquivo CSV com base no filtro selecionado."""
+        filtro = self.filtro_var.get()
+
+        # Selecionar o arquivo de destino
+        file_path = asksaveasfilename(defaultextension=".csv",
+                                      filetypes=[("CSV files", "*.csv")],
+                                      title="Salvar arquivo como")
+        if not file_path:
+            return
+
+        # Consulta SQL com filtro
+        if filtro == "Todos":
+            query = '''
+            SELECT 
+                transacoes.tipo, 
+                transacoes.valor, 
+                transacoes.data, 
+                categorias.nome AS categoria, 
+                transacoes.descricao 
+            FROM 
+                transacoes 
+            JOIN 
+                categorias 
+            ON 
+                transacoes.categoria_id = categorias.id
+            '''
+        else:
+            query = '''
+            SELECT 
+                transacoes.tipo, 
+                transacoes.valor, 
+                transacoes.data, 
+                categorias.nome AS categoria, 
+                transacoes.descricao 
+            FROM 
+                transacoes 
+            JOIN 
+                categorias 
+            ON 
+                transacoes.categoria_id = categorias.id
+            WHERE 
+                transacoes.tipo = ?
+            '''
+        
+        transacoes = search_query(query, (filtro,) if filtro != "Todos" else ())
+
+        # Salvar em CSV
+        with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Tipo", "Valor", "Data", "Categoria", "Descrição"])
+            for transacao in transacoes:
+                writer.writerow(transacao)
+
+        messagebox.showinfo("Sucesso", "Dados exportados para CSV com sucesso.")

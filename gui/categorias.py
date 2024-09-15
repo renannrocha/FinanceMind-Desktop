@@ -69,9 +69,9 @@ class GerenciarCategorias:
             messagebox.showwarning("Aviso", "Selecione uma categoria para excluir.")
 
     def ask_user_input(self, title, prompt):
-        user_input = simpledialog.askstring(title, prompt, parent=self.master)
+        user_input = simpledialog.askstring(title, prompt, parent=self.janela)
         return user_input
 
     def destruir(self):
-        """ Método que destrói o frame quando a aba é trocada """
+        """Método que destrói o frame quando a aba é trocada"""
         self.janela.destroy()
