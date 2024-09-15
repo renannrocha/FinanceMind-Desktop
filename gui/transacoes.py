@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkcalendar import DateEntry
 from database import execute_query, search_query
 from datetime import datetime
 
@@ -9,37 +10,86 @@ class AdicionarTransacao:
         self.criar_widgets()
 
     def criar_widgets(self):
-        tk.Label(self.master, text="Adicionar Transação", font=("Arial", 16)).pack(pady=10)
+        # Frame principal para o layout
+        main_frame = tk.Frame(self.master)
+        main_frame.pack(fill=tk.BOTH, expand=True)
 
+        # Adiciona a tabela de transações
+        self.criar_tabela(main_frame)
+
+        # Adiciona o formulário de adição de transações abaixo da tabela
+        form_frame = tk.Frame(main_frame)
+        form_frame.pack(pady=10, padx=10, fill=tk.X)
+
+        # Título da tela
+        tk.Label(form_frame, text="Adicionar Transação", font=("Arial", 16)).grid(row=0, column=0, columnspan=4, pady=10, sticky="w")
+
+        # Tipo
+        tk.Label(form_frame, text="Tipo:").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+        tipo_frame = tk.Frame(form_frame)
+        tipo_frame.grid(row=1, column=1, padx=5, pady=5, sticky="w")
         self.tipo_var = tk.StringVar(value="Receita")
-        tk.Label(self.master, text="Tipo (Receita/Despesa):").pack(pady=5)
-        tipo_frame = tk.Frame(self.master)
-        tipo_frame.pack(pady=5)
-        tk.Radiobutton(tipo_frame, text="Receita", variable=self.tipo_var, value="Receita").pack(side=tk.LEFT, padx=5)
-        tk.Radiobutton(tipo_frame, text="Despesa", variable=self.tipo_var, value="Despesa").pack(side=tk.LEFT, padx=5)
+        tk.Radiobutton(tipo_frame, text="Receita", variable=self.tipo_var, value="Receita").pack(side=tk.LEFT)
+        tk.Radiobutton(tipo_frame, text="Despesa", variable=self.tipo_var, value="Despesa").pack(side=tk.LEFT)
 
-        tk.Label(self.master, text="Valor:").pack(pady=5)
-        self.valor_entry = tk.Entry(self.master)
-        self.valor_entry.pack(pady=5)
+        # Valor
+        tk.Label(form_frame, text="Valor:").grid(row=2, column=0, padx=5, pady=5, sticky="e")
+        self.valor_entry = tk.Entry(form_frame)
+        self.valor_entry.grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-        tk.Label(self.master, text="Data (YYYY-MM-DD):").pack(pady=5)
-        self.data_entry = tk.Entry(self.master)
-        self.data_entry.pack(pady=5)
+        # Data
+        tk.Label(form_frame, text="Data:").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+        self.data_entry = tk.Entry(form_frame)
+        self.data_entry.grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-        tk.Label(self.master, text="Categoria:").pack(pady=5)
+        # Categoria
+        tk.Label(form_frame, text="Categoria:").grid(row=4, column=0, padx=5, pady=5, sticky="e")
         self.categoria_var = tk.StringVar()
-        self.categoria_combo = ttk.Combobox(self.master, textvariable=self.categoria_var, state='readonly')
-        self.categoria_combo.pack(pady=5)
+        self.categoria_combo = ttk.Combobox(form_frame, textvariable=self.categoria_var, state='readonly')
+        self.categoria_combo.grid(row=4, column=1, padx=5, pady=5, sticky="w")
         self.carregar_categorias()
 
-        tk.Label(self.master, text="Descrição:").pack(pady=5)
-        self.descricao_entry = tk.Entry(self.master)
-        self.descricao_entry.pack(pady=5)
+        # Descrição
+        tk.Label(form_frame, text="Descrição:").grid(row=5, column=0, padx=5, pady=5, sticky="e")
+        self.descricao_entry = tk.Entry(form_frame)
+        self.descricao_entry.grid(row=5, column=1, padx=5, pady=5, sticky="w")
 
-        salvar_btn = tk.Button(self.master, text="Salvar", command=self.salvar)
-        salvar_btn.pack(pady=10)
+        # Botão salvar
+        salvar_btn = tk.Button(form_frame, text="Salvar", command=self.salvar)
+        salvar_btn.grid(row=6, column=1, padx=5, pady=10, sticky="e")
 
+        # Atualiza categorias
         self.tipo_var.trace_add("write", self.atualizar_categorias)
+
+    def criar_tabela(self, parent):
+        # Frame da tabela
+        table_frame = tk.Frame(parent)
+        table_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+
+        # Barra de rolagem
+        self.scroll_y = tk.Scrollbar(table_frame, orient="vertical")
+        self.scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Tabela
+        self.table = ttk.Treeview(table_frame, yscrollcommand=self.scroll_y.set, columns=("Tipo", "Valor", "Data", "Categoria", "Descrição"), show="headings")
+        self.table.pack(fill=tk.BOTH, expand=True)
+        self.scroll_y.config(command=self.table.yview)
+
+        # Definição das colunas
+        self.table.heading("Tipo", text="Tipo")
+        self.table.heading("Valor", text="Valor")
+        self.table.heading("Data", text="Data")
+        self.table.heading("Categoria", text="Categoria")
+        self.table.heading("Descrição", text="Descrição")
+        
+        self.table.column("Tipo", width=100)
+        self.table.column("Valor", width=100)
+        self.table.column("Data", width=100)
+        self.table.column("Categoria", width=150)
+        self.table.column("Descrição", width=200)
+
+        # Carregar transações
+        self.carregar_transacoes()
 
     def carregar_categorias(self):
         tipo = self.tipo_var.get()
@@ -80,3 +130,30 @@ class AdicionarTransacao:
                       (tipo, valor, data, categoria_id, descricao))
 
         messagebox.showinfo("Sucesso", "Transação adicionada com sucesso.")
+        self.carregar_transacoes()
+
+    def carregar_transacoes(self):
+        # Limpa as linhas existentes na tabela
+        for row in self.table.get_children():
+            self.table.delete(row)
+        
+        # Consulta SQL qualificada
+        query = '''
+        SELECT 
+            transacoes.tipo, 
+            transacoes.valor, 
+            transacoes.data, 
+            categorias.nome AS categoria, 
+            transacoes.descricao 
+        FROM 
+            transacoes 
+        JOIN 
+            categorias 
+        ON 
+            transacoes.categoria_id = categorias.id
+        '''
+        
+        transacoes = search_query(query)
+        
+        for transacao in transacoes:
+            self.table.insert("", tk.END, values=transacao)

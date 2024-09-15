@@ -10,26 +10,25 @@ class Dashboard:
     def __init__(self, root):
         self.root = root
         self.root.title("FinanceMind")
-        self.conteudo_atual = None  # Variável para rastrear a tela atual
+        self.root.geometry("1200x800") 
+        self.root.resizable(False, False)
+        self.conteudo_atual = None 
         self.criar_widgets()
 
     def criar_widgets(self):
-        # Criar um frame para o menu superior
-        menu = tk.Frame(self.root, bd=1, relief=tk.SUNKEN)  # Borda para separar o menu
+        
+        menu = tk.Frame(self.root, bd=1, relief=tk.SUNKEN)
         menu.pack(side=tk.TOP, fill=tk.X)
 
-        # Botões no menu superior
         tk.Button(menu, text="Dashboard", command=self.mostrar_dashboard).pack(side=tk.LEFT, padx=10, pady=5)
         tk.Button(menu, text="Adicionar Transação", command=self.adicionar_transacao).pack(side=tk.LEFT, padx=10, pady=5)
         tk.Button(menu, text="Gerenciar Categorias", command=self.gerenciar_categorias).pack(side=tk.LEFT, padx=10, pady=5)
         tk.Button(menu, text="Relatórios", command=self.gerar_relatorios).pack(side=tk.LEFT, padx=10, pady=5)
         tk.Button(menu, text="Orçamentos", command=self.gerenciar_orcamentos).pack(side=tk.LEFT, padx=10, pady=5)
 
-        # Criar uma linha divisória abaixo do menu
         separador = ttk.Separator(self.root, orient='horizontal')
         separador.pack(fill=tk.X, pady=5)
 
-        # Frame para o conteúdo principal
         self.conteudo = tk.Frame(self.root)
         self.conteudo.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -69,7 +68,6 @@ class Dashboard:
     def trocar_tela(self, nova_tela):
         """Remove os widgets da tela atual e carrega a nova tela."""
         if self.conteudo_atual != nova_tela:
-            # Destrói o conteúdo da tela atual
             for widget in self.conteudo.winfo_children():
                 widget.destroy()
             self.conteudo_atual = nova_tela
@@ -78,5 +76,5 @@ class Dashboard:
         """Fecha a tela atual destruindo todos os widgets do conteúdo."""
         if self.conteudo_atual is not None:
             for widget in self.conteudo.winfo_children():
-                widget.destroy()  # Remove todos os widgets da tela
-            self.conteudo_atual = None  # Reseta a variável de conteúdo atual
+                widget.destroy()
+            self.conteudo_atual = None
