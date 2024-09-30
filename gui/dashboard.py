@@ -25,7 +25,7 @@ class Dashboard:
             tk.Button(menu, text="Adicionar Transação", command=self.adicionar_transacao).pack(side=tk.LEFT, padx=10, pady=5)
             tk.Button(menu, text="Gerenciar Categorias", command=self.gerenciar_categorias).pack(side=tk.LEFT, padx=10, pady=5)
             tk.Button(menu, text="Relatórios", command=self.gerar_relatorios).pack(side=tk.LEFT, padx=10, pady=5)
-            tk.Button(menu, text="Orçamentos", command=self.gerenciar_orcamentos).pack(side=tk.LEFT, padx=10, pady=5)
+            #tk.Button(menu, text="Orçamentos", command=self.gerenciar_orcamentos).pack(side=tk.LEFT, padx=10, pady=5)
 
             separador = ttk.Separator(self.root, orient='horizontal')
             separador.pack(fill=tk.X, pady=5)
@@ -88,7 +88,7 @@ class Dashboard:
             Relatorios(self.conteudo)
         except Exception as e:
             messagebox.showerror("Erro", f"Ocorreu um erro ao gerar relatórios: {e}")
-
+    """
     def gerenciar_orcamentos(self):
         try:
             self.fechar_tela()
@@ -96,7 +96,7 @@ class Dashboard:
             Orcamentos(self.conteudo)
         except Exception as e:
             messagebox.showerror("Erro", f"Ocorreu um erro ao gerenciar orçamentos: {e}")
-
+    """
     def trocar_tela(self, nova_tela):
         """Remove os widgets da tela atual e carrega a nova tela."""
         if self.conteudo_atual != nova_tela:
