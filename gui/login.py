@@ -12,6 +12,8 @@ class Login:
     def __init__(self, root):
         self.root = root
         self.root.title("Login")
+        self.centralizar_janela(300, 200)  # Chamar a função para centralizar a janela
+        self.root.resizable(False, False)
         self.criar_widgets()
 
     def criar_widgets(self):
@@ -42,3 +44,11 @@ class Login:
     def cadastrar(self):
         self.root.withdraw()
         mostrar_cadastro()
+    
+    def centralizar_janela(self, largura, altura):
+        """Centraliza a janela no centro da tela"""
+        largura_tela = self.root.winfo_screenwidth()
+        altura_tela = self.root.winfo_screenheight()
+        pos_x = (largura_tela // 2) - (largura // 2) 
+        pos_y = (altura_tela // 2) - (altura // 2) 
+        self.root.geometry(f'{largura}x{altura}+{pos_x}+{pos_y}')

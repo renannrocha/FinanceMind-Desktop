@@ -11,7 +11,7 @@ class Dashboard:
     def __init__(self, root):
         self.root = root
         self.root.title("FinanceMind")
-        self.root.geometry("1200x800")
+        self.centralizar_janela(1200, 800)  # Chamar a função para centralizar a janela
         self.root.resizable(False, False)
         self.conteudo_atual = None
         self.criar_widgets()
@@ -92,3 +92,11 @@ class Dashboard:
             for widget in self.conteudo.winfo_children():
                 widget.destroy()
             self.conteudo_atual = None
+
+    def centralizar_janela(self, largura, altura):
+        """Centraliza a janela no centro da tela"""
+        largura_tela = self.root.winfo_screenwidth()  # Largura total da tela
+        altura_tela = self.root.winfo_screenheight()  # Altura total da tela
+        pos_x = (largura_tela // 2) - (largura // 2)  # Cálculo da posição X
+        pos_y = (altura_tela // 2) - (altura // 2)  # Cálculo da posição Y
+        self.root.geometry(f'{largura}x{altura}+{pos_x}+{pos_y}')
