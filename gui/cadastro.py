@@ -3,16 +3,22 @@ from tkinter import messagebox
 from database import execute_query
 
 def mostrar_login():
-    root = tk.Tk()
-    from gui.login import Login
-    Login(root)
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        from gui.login import Login
+        Login(root)
+        root.mainloop()
+    except Exception as e:
+        messagebox.showerror("Erro", f"Erro ao abrir a janela de login: {e}")
 
 class Cadastro:
     def __init__(self, root):
         self.root = root
         self.root.title("Cadastro")
-        self.centralizar_janela(300, 300)  # Chamar a função para centralizar a janela
+        try:
+            self.centralizar_janela(300, 300)  # Chamar a função para centralizar a janela
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao centralizar a janela: {e}")
         self.root.resizable(False, False)
         self.criar_widgets()
 
@@ -57,13 +63,19 @@ class Cadastro:
             messagebox.showerror("Erro", f"Erro ao cadastrar usuário: {e}")
 
     def voltar(self):
-        self.root.destroy()
-        mostrar_login()
+        try:
+            self.root.destroy()
+            mostrar_login()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao voltar para a tela de login: {e}")
 
     def centralizar_janela(self, largura, altura):
         """Centraliza a janela no centro da tela"""
-        largura_tela = self.root.winfo_screenwidth()
-        altura_tela = self.root.winfo_screenheight()
-        pos_x = (largura_tela // 2) - (largura // 2) 
-        pos_y = (altura_tela // 2) - (altura // 2) 
-        self.root.geometry(f'{largura}x{altura}+{pos_x}+{pos_y}')
+        try:
+            largura_tela = self.root.winfo_screenwidth()
+            altura_tela = self.root.winfo_screenheight()
+            pos_x = (largura_tela // 2) - (largura // 2)
+            pos_y = (altura_tela // 2) - (altura // 2)
+            self.root.geometry(f'{largura}x{altura}+{pos_x}+{pos_y}')
+        except Exception as e:
+            raise RuntimeError(f"Erro ao calcular a posição da janela: {e}")

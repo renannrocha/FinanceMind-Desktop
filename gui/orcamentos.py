@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from tkcalendar import DateEntry
 from database import execute_query, search_query
-from datetime import datetime
 
 class Orcamentos:
     def __init__(self, parent):
@@ -82,10 +80,13 @@ class Orcamentos:
         self.carregar_orcamentos()
 
     def carregar_categorias(self):
-        categorias = search_query("SELECT nome FROM categorias")
-        self.categoria_combo['values'] = [c[0] for c in categorias]
-        if categorias:
-            self.categoria_combo.current(0)
+        try:
+            categorias = search_query("SELECT nome FROM categorias")
+            self.categoria_combo['values'] = [c[0] for c in categorias]
+            if categorias:
+                self.categoria_combo.current(0)
+        except Exception as e:
+            messagebox.showerror("Erro ao carregar categorias", str(e))
 
     def salvar(self):
         categoria = self.categoria_var.get()
@@ -102,43 +103,48 @@ class Orcamentos:
             ano = int(ano)
             valor = float(valor)
         except ValueError:
-            messagebox.showerror("Erro", "Dados inválidos.")
+            messagebox.showerror("Erro", "Mês, Ano e Valor devem ser numéricos válidos.")
             return
 
-        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))
-        if categorias:
-            categoria_id = categorias[0][0]
-        else:
-            messagebox.showerror("Erro", "Categoria não encontrada.")
-            return
+        try:
+            categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,))
+            if categorias:
+                categoria_id = categorias[0][0]
+            else:
+                messagebox.showerror("Erro", "Categoria não encontrada.")
+                return
 
-        execute_query('''INSERT INTO orcamentos (categoria_id, mes, ano, valor) VALUES (?, ?, ?, ?)''',
-                      (categoria_id, mes, ano, valor))
-
-        messagebox.showinfo("Sucesso", "Orçamento adicionado com sucesso.")
-        self.carregar_orcamentos()
+            execute_query('''INSERT INTO orcamentos (categoria_id, mes, ano, valor) VALUES (?, ?, ?, ?)''',
+                          (categoria_id, mes, ano, valor))
+            messagebox.showinfo("Sucesso", "Orçamento adicionado com sucesso.")
+            self.carregar_orcamentos()
+        except Exception as e:
+            messagebox.showerror("Erro ao salvar orçamento", str(e))
 
     def carregar_orcamentos(self):
-        # Limpa as linhas existentes na tabela
-        for row in self.table.get_children():
-            self.table.delete(row)
-        
-        # Consulta SQL qualificada
-        query = '''
-        SELECT 
-            categorias.nome AS categoria, 
-            orcamentos.mes, 
-            orcamentos.ano, 
-            orcamentos.valor
-        FROM 
-            orcamentos 
-        JOIN 
-            categorias 
-        ON 
-            orcamentos.categoria_id = categorias.id
-        '''
-        
-        orcamentos = search_query(query)
-        
-        for orcamento in orcamentos:
-            self.table.insert("", tk.END, values=orcamento)
+        try:
+            # Limpa as linhas existentes na tabela
+            for row in self.table.get_children():
+                self.table.delete(row)
+
+            # Consulta SQL qualificada
+            query = '''
+            SELECT 
+                categorias.nome AS categoria, 
+                orcamentos.mes, 
+                orcamentos.ano, 
+                orcamentos.valor
+            FROM 
+                orcamentos 
+            JOIN 
+                categorias 
+            ON 
+                orcamentos.categoria_id = categorias.id
+            '''
+            
+            orcamentos = search_query(query)
+            
+            for orcamento in orcamentos:
+                self.table.insert("", tk.END, values=orcamento)
+        except Exception as e:
+            messagebox.showerror("Erro ao carregar orçamentos", str(e))

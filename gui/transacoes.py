@@ -115,10 +115,13 @@ class AdicionarTransacao:
 
     def carregar_categorias(self):
         tipo = self.tipo_var.get()
-        categorias = search_query("SELECT nome FROM categorias WHERE tipo = ?", (tipo,))
-        self.categoria_combo['values'] = [c[0] for c in categorias]
-        if categorias:
-            self.categoria_combo.current(0)
+        try:
+            categorias = search_query("SELECT nome FROM categorias WHERE tipo = ?", (tipo,))
+            self.categoria_combo['values'] = [c[0] for c in categorias]
+            if categorias:
+                self.categoria_combo.current(0)
+        except Exception as e:
+            messagebox.showerror("Erro ao carregar categorias", str(e))
 
     def atualizar_categorias(self, *args):
         self.carregar_categorias()
@@ -140,24 +143,27 @@ class AdicionarTransacao:
             messagebox.showerror("Erro", "Valor inválido.")
             return
 
-        categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,)) 
-        if categorias:
-            categoria_id = categorias[0][0]
-        else:
-            messagebox.showerror("Erro", "Categoria não encontrada.")
-            return
+        try:
+            categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,)) 
+            if categorias:
+                categoria_id = categorias[0][0]
+            else:
+                messagebox.showerror("Erro", "Categoria não encontrada.")
+                return
 
-        execute_query('''INSERT INTO transacoes (tipo, valor, data, categoria_id, descricao) VALUES (?, ?, ?, ?, ?)''',
-                      (tipo, valor, data, categoria_id, descricao))
+            execute_query('''INSERT INTO transacoes (tipo, valor, data, categoria_id, descricao) VALUES (?, ?, ?, ?, ?)''',
+                          (tipo, valor, data, categoria_id, descricao))
 
-        messagebox.showinfo("Sucesso", "Transação adicionada com sucesso.")
-        self.carregar_transacoes()
+            messagebox.showinfo("Sucesso", "Transação adicionada com sucesso.")
+            self.carregar_transacoes()
+        except Exception as e:
+            messagebox.showerror("Erro ao salvar transação", str(e))
 
     def carregar_transacoes(self):
         # Limpa as linhas existentes na tabela
         for row in self.table.get_children():
             self.table.delete(row)
-        
+
         # Consulta SQL qualificada
         query = '''
         SELECT 
@@ -174,10 +180,12 @@ class AdicionarTransacao:
             transacoes.categoria_id = categorias.id
         '''
         
-        transacoes = search_query(query)
-        
-        for transacao in transacoes:
-            self.table.insert("", tk.END, values=transacao)
+        try:
+            transacoes = search_query(query)
+            for transacao in transacoes:
+                self.table.insert("", tk.END, values=transacao)
+        except Exception as e:
+            messagebox.showerror("Erro ao carregar transações", str(e))
 
     def limpar_campos(self):
         """Limpa todos os campos do formulário."""
@@ -192,53 +200,44 @@ class AdicionarTransacao:
         filtro = self.filtro_var.get()
 
         # Selecionar o arquivo de destino
-        file_path = asksaveasfilename(defaultextension=".csv",
-                                      filetypes=[("CSV files", "*.csv")],
-                                      title="Salvar arquivo como")
+        file_path = asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
         if not file_path:
             return
 
-        # Consulta SQL com filtro
-        if filtro == "Todos":
-            query = '''
-            SELECT 
-                transacoes.tipo, 
-                transacoes.valor, 
-                transacoes.data, 
-                categorias.nome AS categoria, 
-                transacoes.descricao 
-            FROM 
-                transacoes 
-            JOIN 
-                categorias 
-            ON 
-                transacoes.categoria_id = categorias.id
-            '''
-        else:
-            query = '''
-            SELECT 
-                transacoes.tipo, 
-                transacoes.valor, 
-                transacoes.data, 
-                categorias.nome AS categoria, 
-                transacoes.descricao 
-            FROM 
-                transacoes 
-            JOIN 
-                categorias 
-            ON 
-                transacoes.categoria_id = categorias.id
-            WHERE 
-                transacoes.tipo = ?
-            '''
+        # Cria a query com base no filtro
+        query = '''
+        SELECT 
+            transacoes.tipo, 
+            transacoes.valor, 
+            transacoes.data, 
+            categorias.nome AS categoria, 
+            transacoes.descricao 
+        FROM 
+            transacoes 
+        JOIN 
+            categorias 
+        ON 
+            transacoes.categoria_id = categorias.id
+        '''
         
-        transacoes = search_query(query, (filtro,) if filtro != "Todos" else ())
+        if filtro != "Todos":
+            query += ' WHERE transacoes.tipo = ?'
 
-        # Salvar em CSV
-        with open(file_path, mode='w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerow(["Tipo", "Valor", "Data", "Categoria", "Descrição"])
-            for transacao in transacoes:
-                writer.writerow(transacao)
+        try:
+            with open(file_path, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Tipo", "Valor", "Data", "Categoria", "Descrição"])
 
-        messagebox.showinfo("Sucesso", "Dados exportados para CSV com sucesso.")
+                # Executar a consulta com filtro se necessário
+                if filtro != "Todos":
+                    transacoes = search_query(query, (filtro,))
+                else:
+                    transacoes = search_query(query)
+
+                for transacao in transacoes:
+                    writer.writerow(transacao)
+
+            messagebox.showinfo("Sucesso", "Exportação concluída com sucesso!")
+        except Exception as e:
+            messagebox.showerror("Erro ao exportar para CSV", str(e))
+

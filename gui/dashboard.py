@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from utils.graficos import gerar_grafico_transacoes, gerar_grafico_despesas, gerar_grafico_receitas
 from gui.transacoes import AdicionarTransacao
@@ -17,67 +17,85 @@ class Dashboard:
         self.criar_widgets()
 
     def criar_widgets(self):
-        menu = tk.Frame(self.root, bd=1, relief=tk.SUNKEN)
-        menu.pack(side=tk.TOP, fill=tk.X)
+        try:
+            menu = tk.Frame(self.root, bd=1, relief=tk.SUNKEN)
+            menu.pack(side=tk.TOP, fill=tk.X)
 
-        tk.Button(menu, text="Dashboard", command=self.mostrar_dashboard).pack(side=tk.LEFT, padx=10, pady=5)
-        tk.Button(menu, text="Adicionar Transação", command=self.adicionar_transacao).pack(side=tk.LEFT, padx=10, pady=5)
-        tk.Button(menu, text="Gerenciar Categorias", command=self.gerenciar_categorias).pack(side=tk.LEFT, padx=10, pady=5)
-        tk.Button(menu, text="Relatórios", command=self.gerar_relatorios).pack(side=tk.LEFT, padx=10, pady=5)
-        tk.Button(menu, text="Orçamentos", command=self.gerenciar_orcamentos).pack(side=tk.LEFT, padx=10, pady=5)
+            tk.Button(menu, text="Dashboard", command=self.mostrar_dashboard).pack(side=tk.LEFT, padx=10, pady=5)
+            tk.Button(menu, text="Adicionar Transação", command=self.adicionar_transacao).pack(side=tk.LEFT, padx=10, pady=5)
+            tk.Button(menu, text="Gerenciar Categorias", command=self.gerenciar_categorias).pack(side=tk.LEFT, padx=10, pady=5)
+            tk.Button(menu, text="Relatórios", command=self.gerar_relatorios).pack(side=tk.LEFT, padx=10, pady=5)
+            tk.Button(menu, text="Orçamentos", command=self.gerenciar_orcamentos).pack(side=tk.LEFT, padx=10, pady=5)
 
-        separador = ttk.Separator(self.root, orient='horizontal')
-        separador.pack(fill=tk.X, pady=5)
+            separador = ttk.Separator(self.root, orient='horizontal')
+            separador.pack(fill=tk.X, pady=5)
 
-        self.conteudo = tk.Frame(self.root)
-        self.conteudo.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+            self.conteudo = tk.Frame(self.root)
+            self.conteudo.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.mostrar_dashboard()
+            self.mostrar_dashboard()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao criar a interface: {e}")
 
     def mostrar_dashboard(self):
-        self.fechar_tela()
-        self.trocar_tela(self.mostrar_dashboard)
+        try:
+            self.fechar_tela()
+            self.trocar_tela(self.mostrar_dashboard)
 
-        tk.Label(self.conteudo, text="Visão Geral das Finanças", font=("Arial", 16)).pack(pady=10)
+            tk.Label(self.conteudo, text="Visão Geral das Finanças", font=("Arial", 16)).pack(pady=10)
 
-        frame_graficos = tk.Frame(self.conteudo)
-        frame_graficos.pack(pady=10, fill=tk.BOTH, expand=True)
+            frame_graficos = tk.Frame(self.conteudo)
+            frame_graficos.pack(pady=10, fill=tk.BOTH, expand=True)
 
-        # Gerar e exibir gráficos
-        fig_despesas = gerar_grafico_despesas()
-        canvas_despesas = FigureCanvasTkAgg(fig_despesas, master=frame_graficos)
-        canvas_despesas.draw()
-        canvas_despesas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            # Gerar e exibir gráficos
+            fig_despesas = gerar_grafico_despesas()
+            canvas_despesas = FigureCanvasTkAgg(fig_despesas, master=frame_graficos)
+            canvas_despesas.draw()
+            canvas_despesas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        fig_receitas = gerar_grafico_receitas()
-        canvas_receitas = FigureCanvasTkAgg(fig_receitas, master=frame_graficos)
-        canvas_receitas.draw()
-        canvas_receitas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            fig_receitas = gerar_grafico_receitas()
+            canvas_receitas = FigureCanvasTkAgg(fig_receitas, master=frame_graficos)
+            canvas_receitas.draw()
+            canvas_receitas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        fig_transacoes = gerar_grafico_transacoes()
-        canvas_transacoes = FigureCanvasTkAgg(fig_transacoes, master=frame_graficos)
-        canvas_transacoes.draw()
-        canvas_transacoes.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            fig_transacoes = gerar_grafico_transacoes()
+            canvas_transacoes = FigureCanvasTkAgg(fig_transacoes, master=frame_graficos)
+            canvas_transacoes.draw()
+            canvas_transacoes.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao mostrar o dashboard: {e}")
 
     def adicionar_transacao(self):
-        self.fechar_tela()
-        self.trocar_tela(self.adicionar_transacao)
-        AdicionarTransacao(self.conteudo)
+        try:
+            self.fechar_tela()
+            self.trocar_tela(self.adicionar_transacao)
+            AdicionarTransacao(self.conteudo)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao adicionar uma transação: {e}")
 
     def gerenciar_categorias(self):
-        self.fechar_tela()
-        self.trocar_tela(self.gerenciar_categorias)
-        GerenciarCategorias(self.conteudo)
+        try:
+            self.fechar_tela()
+            self.trocar_tela(self.gerenciar_categorias)
+            GerenciarCategorias(self.conteudo)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao gerenciar categorias: {e}")
 
     def gerar_relatorios(self):
-        self.fechar_tela()
-        self.trocar_tela(self.gerar_relatorios)
-        Relatorios(self.conteudo)
+        try:
+            self.fechar_tela()
+            self.trocar_tela(self.gerar_relatorios)
+            Relatorios(self.conteudo)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao gerar relatórios: {e}")
 
     def gerenciar_orcamentos(self):
-        self.fechar_tela()
-        self.trocar_tela(self.gerenciar_orcamentos)
-        Orcamentos(self.conteudo)
+        try:
+            self.fechar_tela()
+            self.trocar_tela(self.gerenciar_orcamentos)
+            Orcamentos(self.conteudo)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao gerenciar orçamentos: {e}")
 
     def trocar_tela(self, nova_tela):
         """Remove os widgets da tela atual e carrega a nova tela."""
@@ -95,8 +113,11 @@ class Dashboard:
 
     def centralizar_janela(self, largura, altura):
         """Centraliza a janela no centro da tela"""
-        largura_tela = self.root.winfo_screenwidth()  # Largura total da tela
-        altura_tela = self.root.winfo_screenheight()  # Altura total da tela
-        pos_x = (largura_tela // 2) - (largura // 2)  # Cálculo da posição X
-        pos_y = (altura_tela // 2) - (altura // 2)  # Cálculo da posição Y
-        self.root.geometry(f'{largura}x{altura}+{pos_x}+{pos_y}')
+        try:
+            largura_tela = self.root.winfo_screenwidth()  # Largura total da tela
+            altura_tela = self.root.winfo_screenheight()  # Altura total da tela
+            pos_x = (largura_tela // 2) - (largura // 2)  # Cálculo da posição X
+            pos_y = (altura_tela // 2) - (altura // 2)  # Cálculo da posição Y
+            self.root.geometry(f'{largura}x{altura}+{pos_x}+{pos_y}')
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao centralizar a janela: {e}")
