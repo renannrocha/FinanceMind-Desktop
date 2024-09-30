@@ -6,9 +6,11 @@ from datetime import datetime
 import csv
 from tkinter.filedialog import asksaveasfilename
 
+
 class AdicionarTransacao:
     def __init__(self, parent):
         self.master = parent
+        self.transacao_id = None  # Variável para armazenar o ID da transação a ser atualizada
         self.criar_widgets()
 
     def criar_widgets(self):
@@ -56,13 +58,19 @@ class AdicionarTransacao:
         self.descricao_entry = tk.Entry(form_frame)
         self.descricao_entry.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
 
-        # Botão salvar
-        salvar_btn = tk.Button(form_frame, text="Salvar", command=self.salvar)
-        salvar_btn.grid(row=6, column=1, padx=5, pady=10, sticky="e")
+        # Botões Salvar, Limpar e Atualizar
+        btn_frame = tk.Frame(form_frame)
+        btn_frame.grid(row=6, column=1, padx=5, pady=10, sticky="e")
 
-        # Botão limpar
-        limpar_btn = tk.Button(form_frame, text="Limpar", command=self.limpar_campos)
-        limpar_btn.grid(row=6, column=0, padx=5, pady=10, sticky="w")
+        salvar_btn = tk.Button(btn_frame, text="Salvar", command=self.salvar)
+        salvar_btn.pack(side=tk.LEFT, padx=5)
+
+        limpar_btn = tk.Button(btn_frame, text="Limpar", command=self.limpar_campos)
+        limpar_btn.pack(side=tk.LEFT, padx=5)
+
+        atualizar_btn = tk.Button(btn_frame, text="Atualizar", command=self.atualizar, state=tk.DISABLED)
+        atualizar_btn.pack(side=tk.LEFT, padx=5)
+        self.atualizar_btn = atualizar_btn  # Guardar referência do botão para habilitar/desabilitar
 
         # Filtro de exportação
         tk.Label(form_frame, text="Filtrar exportação:").grid(row=7, column=0, padx=5, pady=5, sticky="e")
@@ -113,6 +121,9 @@ class AdicionarTransacao:
         # Carregar transações
         self.carregar_transacoes()
 
+        # Evento de seleção na tabela
+        self.table.bind("<<TreeviewSelect>>", self.preencher_campos)
+
     def carregar_categorias(self):
         tipo = self.tipo_var.get()
         try:
@@ -126,6 +137,31 @@ class AdicionarTransacao:
     def atualizar_categorias(self, *args):
         self.carregar_categorias()
 
+    def preencher_campos(self, event):
+        """Preenche os campos com os dados da transação selecionada."""
+        selected_item = self.table.selection()
+        if selected_item:
+            item_data = self.table.item(selected_item, 'values')
+            tipo, valor, data, categoria, descricao = item_data
+
+            # Preencher os campos
+            self.tipo_var.set(tipo)
+            self.valor_entry.delete(0, tk.END)
+            self.valor_entry.insert(0, valor)
+            self.data_entry.set_date(datetime.strptime(data, "%Y-%m-%d"))
+            self.categoria_var.set(categoria)
+            self.descricao_entry.delete(0, tk.END)
+            self.descricao_entry.insert(0, descricao)
+
+            # Ativar o botão de atualizar
+            self.atualizar_btn.config(state=tk.NORMAL)
+
+            # Definir a transação atual para atualizar
+            transacao_info = search_query('''SELECT id FROM transacoes WHERE tipo = ? AND valor = ? AND data = ? AND descricao = ?''',
+                                          (tipo, valor, data, descricao))
+            if transacao_info:
+                self.transacao_id = transacao_info[0][0]
+
     def salvar(self):
         tipo = self.tipo_var.get()
         valor = self.valor_entry.get()
@@ -138,106 +174,103 @@ class AdicionarTransacao:
             return
 
         try:
-            valor = float(valor)
-        except ValueError:
-            messagebox.showerror("Erro", "Valor inválido.")
-            return
-
-        try:
-            categorias = search_query("SELECT id FROM categorias WHERE nome = ?", (categoria,)) 
-            if categorias:
-                categoria_id = categorias[0][0]
-            else:
-                messagebox.showerror("Erro", "Categoria não encontrada.")
-                return
-
-            execute_query('''INSERT INTO transacoes (tipo, valor, data, categoria_id, descricao) VALUES (?, ?, ?, ?, ?)''',
-                          (tipo, valor, data, categoria_id, descricao))
-
-            messagebox.showinfo("Sucesso", "Transação adicionada com sucesso.")
+            execute_query(
+                "INSERT INTO transacoes (tipo, valor, data, categoria_id, descricao) VALUES (?, ?, ?, (SELECT id FROM categorias WHERE nome = ?), ?)",
+                (tipo, valor, data, categoria, descricao)
+            )
+            messagebox.showinfo("Sucesso", "Transação salva com sucesso.")
+            self.limpar_campos()
             self.carregar_transacoes()
         except Exception as e:
             messagebox.showerror("Erro ao salvar transação", str(e))
 
-    def carregar_transacoes(self):
-        # Limpa as linhas existentes na tabela
-        for row in self.table.get_children():
-            self.table.delete(row)
+    def atualizar(self):
+        """Atualiza a transação selecionada com os dados inseridos no formulário."""
+        if self.transacao_id is None:
+            messagebox.showerror("Erro", "Nenhuma transação selecionada para atualização.")
+            return
 
-        # Consulta SQL qualificada
-        query = '''
-        SELECT 
-            transacoes.tipo, 
-            transacoes.valor, 
-            transacoes.data, 
-            categorias.nome AS categoria, 
-            transacoes.descricao 
-        FROM 
-            transacoes 
-        JOIN 
-            categorias 
-        ON 
-            transacoes.categoria_id = categorias.id
-        '''
-        
+        tipo = self.tipo_var.get()
+        valor = self.valor_entry.get()
+        data = self.data_entry.get_date()  # Usar a data selecionada
+        categoria = self.categoria_var.get()
+        descricao = self.descricao_entry.get()
+
+        if not valor or not data or not categoria:
+            messagebox.showerror("Erro", "Por favor, preencha todos os campos obrigatórios.")
+            return
+
         try:
-            transacoes = search_query(query)
+            execute_query(
+                "UPDATE transacoes SET tipo = ?, valor = ?, data = ?, categoria_id = (SELECT id FROM categorias WHERE nome = ?), descricao = ? WHERE id = ?",
+                (tipo, valor, data, categoria, descricao, self.transacao_id)
+            )
+            messagebox.showinfo("Sucesso", "Transação atualizada com sucesso.")
+            self.limpar_campos()
+            self.carregar_transacoes()
+        except Exception as e:
+            messagebox.showerror("Erro ao atualizar transação", str(e))
+
+    def carregar_transacoes(self):
+        """Carrega as transações da base de dados e exibe na tabela."""
+        try:
+            transacoes = search_query('''
+                SELECT t.tipo, t.valor, t.data, c.nome AS categoria, t.descricao
+                FROM transacoes t
+                JOIN categorias c ON t.categoria_id = c.id
+            ''')
+            self.table.delete(*self.table.get_children())
             for transacao in transacoes:
                 self.table.insert("", tk.END, values=transacao)
         except Exception as e:
             messagebox.showerror("Erro ao carregar transações", str(e))
 
     def limpar_campos(self):
-        """Limpa todos os campos do formulário."""
+        """Limpa os campos do formulário."""
         self.tipo_var.set("Receita")
         self.valor_entry.delete(0, tk.END)
-        self.data_entry.set_date(datetime.now())
-        self.categoria_var.set("")
+        self.data_entry.set_date(datetime.today())
+        self.categoria_var.set('')
         self.descricao_entry.delete(0, tk.END)
 
+        # Desabilitar botão de atualizar
+        self.atualizar_btn.config(state=tk.DISABLED)
+
+        # Resetar a transação ID
+        self.transacao_id = None
+
     def exportar_para_csv(self):
-        """Exporta os dados da tabela para um arquivo CSV com base no filtro selecionado."""
         filtro = self.filtro_var.get()
 
-        # Selecionar o arquivo de destino
-        file_path = asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
-        if not file_path:
-            return
-
-        # Cria a query com base no filtro
-        query = '''
-        SELECT 
-            transacoes.tipo, 
-            transacoes.valor, 
-            transacoes.data, 
-            categorias.nome AS categoria, 
-            transacoes.descricao 
-        FROM 
-            transacoes 
-        JOIN 
-            categorias 
-        ON 
-            transacoes.categoria_id = categorias.id
-        '''
-        
-        if filtro != "Todos":
-            query += ' WHERE transacoes.tipo = ?'
-
         try:
-            with open(file_path, mode='w', newline='') as file:
+            if filtro == "Todos":
+                transacoes = search_query('''
+                    SELECT t.tipo, t.valor, t.data, c.nome AS categoria, t.descricao
+                    FROM transacoes t
+                    JOIN categorias c ON t.categoria_id = c.id
+                ''')
+            else:
+                transacoes = search_query('''
+                    SELECT t.tipo, t.valor, t.data, c.nome AS categoria, t.descricao
+                    FROM transacoes t
+                    JOIN categorias c ON t.categoria_id = c.id
+                    WHERE t.tipo = ?
+                ''', (filtro,))
+
+            if not transacoes:
+                messagebox.showinfo("Sem dados", "Não há transações para exportar.")
+                return
+
+            # Abrir diálogo para salvar o arquivo CSV
+            file_path = asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+            if not file_path:
+                return
+
+            with open(file_path, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 writer.writerow(["Tipo", "Valor", "Data", "Categoria", "Descrição"])
+                writer.writerows(transacoes)
 
-                # Executar a consulta com filtro se necessário
-                if filtro != "Todos":
-                    transacoes = search_query(query, (filtro,))
-                else:
-                    transacoes = search_query(query)
-
-                for transacao in transacoes:
-                    writer.writerow(transacao)
-
-            messagebox.showinfo("Sucesso", "Exportação concluída com sucesso!")
+            messagebox.showinfo("Sucesso", f"Transações exportadas com sucesso para {file_path}")
         except Exception as e:
-            messagebox.showerror("Erro ao exportar para CSV", str(e))
-
+            messagebox.showerror("Erro ao exportar", str(e))
